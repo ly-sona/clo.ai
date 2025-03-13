@@ -1,0 +1,610 @@
+[
+    {
+        "id": 1,
+        "design_name": "Design_A",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal1",
+                    "components": [
+                        {
+                            "type": "transistor",
+                            "coordinates": [
+                                100,
+                                200
+                            ]
+                        },
+                        {
+                            "type": "capacitor",
+                            "coordinates": [
+                                150,
+                                250
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "transistor_1",
+                        "to": "capacitor_1"
+                    }
+                ]
+            }
+        },
+        "power_metric": 12.3456,
+        "area": 1500.0,
+        "wire_length": 320.5
+    },
+    {
+        "id": 2,
+        "design_name": "Design_B",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal2",
+                    "components": [
+                        {
+                            "type": "resistor",
+                            "coordinates": [
+                                50,
+                                100
+                            ]
+                        },
+                        {
+                            "type": "diode",
+                            "coordinates": [
+                                75,
+                                125
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "resistor_1",
+                        "to": "diode_1"
+                    }
+                ]
+            }
+        },
+        "power_metric": 10.5678,
+        "area": 1800.5,
+        "wire_length": 400.75
+    },
+    {
+        "id": 3,
+        "design_name": "Design_C",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal3",
+                    "components": [
+                        {
+                            "type": "inductor",
+                            "coordinates": [
+                                200,
+                                300
+                            ]
+                        },
+                        {
+                            "type": "mosfet",
+                            "coordinates": [
+                                250,
+                                350
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "inductor_1",
+                        "to": "mosfet_1"
+                    }
+                ]
+            }
+        },
+        "power_metric": 15.789,
+        "area": 2200.75,
+        "wire_length": 500.9
+    },
+    {
+        "id": 4,
+        "design_name": "Design_D",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal4",
+                    "components": [
+                        {
+                            "type": "opamp",
+                            "coordinates": [
+                                300,
+                                400
+                            ]
+                        },
+                        {
+                            "type": "diode",
+                            "coordinates": [
+                                350,
+                                450
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "opamp_1",
+                        "to": "diode_2"
+                    }
+                ]
+            }
+        },
+        "power_metric": 8.4321,
+        "area": 1750.25,
+        "wire_length": 375.4
+    },
+    {
+        "id": 5,
+        "design_name": "Design_E",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal5",
+                    "components": [
+                        {
+                            "type": "transistor",
+                            "coordinates": [
+                                400,
+                                500
+                            ]
+                        },
+                        {
+                            "type": "capacitor",
+                            "coordinates": [
+                                450,
+                                550
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "transistor_3",
+                        "to": "capacitor_3"
+                    }
+                ]
+            }
+        },
+        "power_metric": 11.2105,
+        "area": 1600.0,
+        "wire_length": 340.6
+    },
+    {
+        "id": 6,
+        "design_name": "Design_F",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal6",
+                    "components": [
+                        {
+                            "type": "resistor",
+                            "coordinates": [
+                                500,
+                                600
+                            ]
+                        },
+                        {
+                            "type": "diode",
+                            "coordinates": [
+                                550,
+                                650
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "resistor_4",
+                        "to": "diode_4"
+                    }
+                ]
+            }
+        },
+        "power_metric": 9.8765,
+        "area": 1950.5,
+        "wire_length": 425.8
+    },
+    {
+        "id": 7,
+        "design_name": "Design_G",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal7",
+                    "components": [
+                        {
+                            "type": "mosfet",
+                            "coordinates": [
+                                600,
+                                700
+                            ]
+                        },
+                        {
+                            "type": "inductor",
+                            "coordinates": [
+                                650,
+                                750
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "mosfet_1",
+                        "to": "inductor_2"
+                    }
+                ]
+            }
+        },
+        "power_metric": 14.6789,
+        "area": 2100.25,
+        "wire_length": 480.2
+    },
+    {
+        "id": 8,
+        "design_name": "Design_H",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal8",
+                    "components": [
+                        {
+                            "type": "diode",
+                            "coordinates": [
+                                700,
+                                800
+                            ]
+                        },
+                        {
+                            "type": "opamp",
+                            "coordinates": [
+                                750,
+                                850
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "diode_5",
+                        "to": "opamp_3"
+                    }
+                ]
+            }
+        },
+        "power_metric": 9.5432,
+        "area": 1700.75,
+        "wire_length": 360.9
+    },
+    {
+        "id": 9,
+        "design_name": "Design_I",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal9",
+                    "components": [
+                        {
+                            "type": "resistor",
+                            "coordinates": [
+                                800,
+                                900
+                            ]
+                        },
+                        {
+                            "type": "transistor",
+                            "coordinates": [
+                                850,
+                                950
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "resistor_6",
+                        "to": "transistor_4"
+                    }
+                ]
+            }
+        },
+        "power_metric": 13.2101,
+        "area": 2300.0,
+        "wire_length": 520.3
+    },
+    {
+        "id": 10,
+        "design_name": "Design_J",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal10",
+                    "components": [
+                        {
+                            "type": "capacitor",
+                            "coordinates": [
+                                900,
+                                1000
+                            ]
+                        },
+                        {
+                            "type": "mosfet",
+                            "coordinates": [
+                                950,
+                                1050
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "capacitor_4",
+                        "to": "mosfet_5"
+                    }
+                ]
+            }
+        },
+        "power_metric": 7.8912,
+        "area": 1550.6,
+        "wire_length": 330.4
+    },
+    {
+        "id": 11,
+        "design_name": "Design_K",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal11",
+                    "components": [
+                        {
+                            "type": "inductor",
+                            "coordinates": [
+                                1000,
+                                1100
+                            ]
+                        },
+                        {
+                            "type": "resistor",
+                            "coordinates": [
+                                1050,
+                                1150
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "inductor_3",
+                        "to": "resistor_7"
+                    }
+                ]
+            }
+        },
+        "power_metric": 12.7654,
+        "area": 2050.85,
+        "wire_length": 470.5
+    },
+    {
+        "id": 12,
+        "design_name": "Design_L",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal12",
+                    "components": [
+                        {
+                            "type": "opamp",
+                            "coordinates": [
+                                1100,
+                                1200
+                            ]
+                        },
+                        {
+                            "type": "capacitor",
+                            "coordinates": [
+                                1150,
+                                1250
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "opamp_4",
+                        "to": "capacitor_5"
+                    }
+                ]
+            }
+        },
+        "power_metric": 10.321,
+        "area": 1850.4,
+        "wire_length": 410.25
+    },
+    {
+        "id": 13,
+        "design_name": "Design_M",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal13",
+                    "components": [
+                        {
+                            "type": "transistor",
+                            "coordinates": [
+                                1200,
+                                1300
+                            ]
+                        },
+                        {
+                            "type": "diode",
+                            "coordinates": [
+                                1250,
+                                1350
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "transistor_5",
+                        "to": "diode_6"
+                    }
+                ]
+            }
+        },
+        "power_metric": 11.5432,
+        "area": 2000.0,
+        "wire_length": 450.0
+    },
+    {
+        "id": 14,
+        "design_name": "Design_N",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal14",
+                    "components": [
+                        {
+                            "type": "resistor",
+                            "coordinates": [
+                                1300,
+                                1400
+                            ]
+                        },
+                        {
+                            "type": "mosfet",
+                            "coordinates": [
+                                1350,
+                                1450
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "resistor_8",
+                        "to": "mosfet_6"
+                    }
+                ]
+            }
+        },
+        "power_metric": 15.9999,
+        "area": 2400.75,
+        "wire_length": 550.75
+    },
+    {
+        "id": 15,
+        "design_name": "Design_O",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal15",
+                    "components": [
+                        {
+                            "type": "capacitor",
+                            "coordinates": [
+                                1400,
+                                1500
+                            ]
+                        },
+                        {
+                            "type": "inductor",
+                            "coordinates": [
+                                1450,
+                                1550
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "capacitor_6",
+                        "to": "inductor_7"
+                    }
+                ]
+            }
+        },
+        "power_metric": 9.2345,
+        "area": 1650.3,
+        "wire_length": 345.6
+    },
+    {
+        "id": 16,
+        "design_name": "Design_P",
+        "layout_data": {
+            "layers": [
+                {
+                    "layer_name": "Metal16",
+                    "components": [
+                        {
+                            "type": "diode",
+                            "coordinates": [
+                                1500,
+                                1600
+                            ]
+                        },
+                        {
+                            "type": "opamp",
+                            "coordinates": [
+                                1550,
+                                1650
+                            ]
+                        }
+                    ]
+                }
+            ],
+            "netlist": {
+                "connections": [
+                    {
+                        "from": "diode_7",
+                        "to": "opamp_5"
+                    }
+                ]
+            }
+        },
+        "power_metric": 8.7654,
+        "area": 1900.9,
+        "wire_length": 415.9
+    }
+]

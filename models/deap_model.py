@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from deap import base, creator, tools, algorithms
 import xgboost as xgb
 from features import extract_features
+from def_writer import write_def
 
 # Layout configuration
 N_MACROS = 10
@@ -105,6 +106,13 @@ def run_ga(threshold=0.5, generations=50, pop_size=30, min_generations=5):
 
 if __name__ == "__main__":
     pop, logbook, hof, fitness = run_ga(threshold=0.3)
+    best_xy = np.array(hof[0]).reshape(-1, 2)
+    write_def(best_xy,
+          GRID_WIDTH,
+          GRID_HEIGHT,
+          design_name="GA_LAYOUT",
+          outfile="best_layout.def")
+
     if fitness:
         plt.plot(range(len(fitness)), fitness, marker='o', linestyle='-')
         plt.xlabel("Generation")

@@ -1,25 +1,41 @@
-const API = import.meta.env.VITE_API_ROOT ?? "http://localhost:8000";
+export const API = import.meta.env.VITE_API ?? "http://localhost:8000";
+export const WS  = API.replace(/^http/, "ws");
+
+export async function apiGetJson<T = unknown>(path: string): Promise<T> {
+  const res = await fetch(`${API}${path}`);
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
 
 export async function apiPostFile(
   path: string,
   file: File,
-  onProgress?: (pct:number)=>void
-) {
-  const data = new FormData();
-  data.append("file", file);
+  onProgress?: (pct: number) => void
+): Promise<string> {
+  const body = new FormData();
+  body.append("file", file);
 
-  const req = new XMLHttpRequest();
-  return new Promise<string>((res, rej)=>{
-    req.open("POST", `${API}${path}`);
-    req.upload.onprogress = e => onProgress?.((e.loaded/e.total)*100);
-    req.onreadystatechange = () => {
-      if (req.readyState === 4) {
-        if (req.status < 400) res(JSON.parse(req.responseText).job_id);
-        else rej(req.responseText);
+  const xhr = new XMLHttpRequest();
+  const url  = `${API}${path}`;
+
+  const p = new Promise<string>((resolve, reject) => {
+    xhr.onerror  = () => reject(new Error("upload failed"));
+    xhr.onload   = () => {
+      try {
+        resolve(JSON.parse(xhr.responseText).job_id as string);
+      } catch (e) {
+        reject(e);
       }
     };
-    req.send(data);
   });
-}
 
-export const apiGetJson = (path:string)=>fetch(`${API}${path}`).then(r=>r.json());
+  if (onProgress) {
+    xhr.upload.onprogress = (e) => {
+      onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+  }
+
+  xhr.open("POST", url);
+  xhr.send(body);
+  return p;
+}

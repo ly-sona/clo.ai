@@ -1,126 +1,100 @@
-# deap_model.py
-import random
-import numpy as np
-import matplotlib.pyplot as plt
+import random, numpy as np, matplotlib.pyplot as plt
 from deap import base, creator, tools, algorithms
 import xgboost as xgb
-from features import extract_features
-from def_writer import write_def
+from .features import extract_features        # keep for layout stats
+from .def_writer import write_def
 
-# Layout configuration
+# ─── Layout config ─────────────────────────────────────────────────────
 N_MACROS = 10
 GRID_WIDTH, GRID_HEIGHT = 10, 10
 
-# Load trained XGBoost model
+# ─── Load trained *congestion* model ───────────────────────────────────
 xgb_model = xgb.XGBRegressor()
-xgb_model.load_model('xgb_layout_model.json')  # Ensure this matches --model_output from training
+xgb_model.load_model("xgb_congestion_model.json")   # ← make sure this file exists
 
+# ─── GA helpers ────────────────────────────────────────────────────────
 def repair(layout):
-    """
-    Ensures that macros don't overlap on the grid.
-    """
     seen = set()
     for i in range(len(layout)):
         pos = tuple(layout[i])
         while pos in seen:
-            layout[i] = [random.randint(0, GRID_WIDTH-1),
-                         random.randint(0, GRID_HEIGHT-1)]
+            layout[i] = [random.randint(0, GRID_WIDTH - 1),
+                         random.randint(0, GRID_HEIGHT - 1)]
             pos = tuple(layout[i])
         seen.add(pos)
     return layout
 
 def evaluate(individual):
     """
-    Evaluate a layout (flattened individual) by predicting power.
+    Return **predicted congestion** for a flattened layout.
+    Lower is better.
     """
     layout = np.array(individual).reshape(-1, 2)
     layout = repair(layout)
-    features = extract_features(layout)
-    predicted_power = xgb_model.predict(features.reshape(1, -1))[0]
-    return predicted_power,
+    feat = extract_features(layout)
+    cong = xgb_model.predict(feat.reshape(1, -1))[0]
+    return (cong,)
 
-def mutate_layout(individual, indpb=0.2):
-    """
-    Slightly shift macro positions with probability indpb.
-    """
-    for i in range(0, len(individual), 2):
+def mutate_layout(ind, indpb=0.2):
+    for i in range(0, len(ind), 2):
         if random.random() < indpb:
-            individual[i] = min(GRID_WIDTH-1, max(0, individual[i] + random.choice([-1, 1])))
+            ind[i] = min(GRID_WIDTH - 1, max(0, ind[i] + random.choice([-1, 1])))
         if random.random() < indpb:
-            individual[i+1] = min(GRID_HEIGHT-1, max(0, individual[i+1] + random.choice([-1, 1])))
-    return individual,
+            ind[i + 1] = min(GRID_HEIGHT - 1, max(0, ind[i + 1] + random.choice([-1, 1])))
+    return (ind,)
 
 def crossover_layout(ind1, ind2):
-    """
-    Two-point crossover at macro boundaries.
-    """
-    size = len(ind1)
-    cxpoint = random.randrange(2, size, 2)
-    ind1[cxpoint:], ind2[cxpoint:] = ind2[cxpoint:], ind1[cxpoint:]
+    cx = random.randrange(2, len(ind1), 2)
+    ind1[cx:], ind2[cx:] = ind2[cx:], ind1[cx:]
     return ind1, ind2
 
-# DEAP setup
-creator.create("FitnessMin", base.Fitness, weights=(-1.0,))  # Minimize power
+# ─── DEAP setup ────────────────────────────────────────────────────────
+creator.create("FitnessMin", base.Fitness, weights=(-1.0,))
 creator.create("Individual", list, fitness=creator.FitnessMin)
 
-toolbox = base.Toolbox()
-toolbox.register("attr_int", random.randint, 0, GRID_WIDTH - 1)
-toolbox.register("individual", tools.initRepeat, creator.Individual, toolbox.attr_int, n=2 * N_MACROS)
-toolbox.register("population", tools.initRepeat, list, toolbox.individual)
+tb = base.Toolbox()
+tb.register("attr_int", random.randint, 0, GRID_WIDTH - 1)
+tb.register("individual", tools.initRepeat, creator.Individual,
+            tb.attr_int, n=2 * N_MACROS)
+tb.register("population", tools.initRepeat, list, tb.individual)
 
-toolbox.register("evaluate", evaluate)
-toolbox.register("mate", crossover_layout)
-toolbox.register("mutate", mutate_layout)
-toolbox.register("select", tools.selTournament, tournsize=3)
+tb.register("evaluate", evaluate)
+tb.register("mate", crossover_layout)
+tb.register("mutate", mutate_layout)
+tb.register("select", tools.selTournament, tournsize=3)
 
-def run_ga(threshold=0.5, generations=50, pop_size=30, min_generations=5):
-    pop = toolbox.population(n=pop_size)
-    hof = tools.HallOfFame(1)
+def run_ga(threshold=5.0, generations=50, pop_size=30, min_generations=5):
+    pop, hof = tb.population(n=pop_size), tools.HallOfFame(1)
     stats = tools.Statistics(lambda ind: ind.fitness.values[0])
-    stats.register("min", np.min)
-    stats.register("avg", np.mean)
+    stats.register("min", np.min); stats.register("avg", np.mean)
 
-    logbook = tools.Logbook()
-    fitness_over_time = []
-
+    fitness_curve = []
     for gen in range(generations):
         print(f"Generation {gen}")
-        offspring = algorithms.varAnd(pop, toolbox, cxpb=0.5, mutpb=0.3)
-
-        fits = list(map(toolbox.evaluate, offspring))
-        for ind, fit in zip(offspring, fits):
+        offspring = algorithms.varAnd(pop, tb, cxpb=0.5, mutpb=0.3)
+        for ind, fit in zip(offspring, map(tb.evaluate, offspring)):
             ind.fitness.values = fit
 
-        pop = toolbox.select(offspring, k=len(pop))
+        pop = tb.select(offspring, k=len(pop))
         hof.update(pop)
 
-        min_fit = min(f.fitness.values[0] for f in pop)
-        fitness_over_time.append(min_fit)
-        logbook.record(gen=gen, **stats.compile(pop))
-
-        if min_fit < threshold and gen >= min_generations:
-            print(f"Threshold reached! Predicted power: {min_fit}")
+        gen_min = min(ind.fitness.values[0] for ind in pop)
+        fitness_curve.append(gen_min)
+        if gen_min < threshold and gen >= min_generations:
+            print(f"Threshold reached! Predicted congestion: {gen_min:.3f}")
             break
 
-    return pop, logbook, hof, fitness_over_time
+    return pop, hof[0], fitness_curve
 
+# ─── CLI run ───────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    pop, logbook, hof, fitness = run_ga(threshold=0.3)
-    best_xy = np.array(hof[0]).reshape(-1, 2)
-    write_def(best_xy,
-          GRID_WIDTH,
-          GRID_HEIGHT,
-          design_name="GA_LAYOUT",
-          outfile="best_layout.def")
+    _, best, curve = run_ga()
+    best_xy = np.array(best).reshape(-1, 2)
+    write_def(best_xy, GRID_WIDTH, GRID_HEIGHT,
+              design_name="GA_LAYOUT", outfile="best_layout.def")
 
-    if fitness:
-        plt.plot(range(len(fitness)), fitness, marker='o', linestyle='-')
-        plt.xlabel("Generation")
-        plt.ylabel("Predicted Power (mW)")
-        plt.title("Fitness Over Generations")
-        plt.grid(True)
-        plt.tight_layout()
-        plt.show()
-    else:
-        print("No fitness data to plot!")
-    print("Best layout (flattened):", hof[0])
+    plt.plot(curve, marker="o")
+    plt.xlabel("Generation"); plt.ylabel("Predicted Congestion")
+    plt.title("Fitness over Generations"); plt.grid(True); plt.tight_layout()
+    plt.show()
+    print("Best layout:", best)

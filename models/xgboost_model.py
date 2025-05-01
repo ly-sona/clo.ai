@@ -6,7 +6,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, r2_score
 from preprocessing import load_dataset
-from features import extract_features
 
 def main():
     parser = argparse.ArgumentParser(
@@ -34,8 +33,7 @@ def main():
         preserve_shape=args.preserve_shape
     )
 
-    # Extract features per sample
-    features = np.array([extract_features(sample) for sample in X_raw])
+    features = np.array([sample.reshape(-1) for sample in X_raw]) 
 
     # Standardize features
     scaler = StandardScaler()

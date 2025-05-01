@@ -3,22 +3,39 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from . import schemas, jobs, optimizer, simulator, utils
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Chip-Layout API")
 app.mount("/static", StaticFiles(directory=Path(__file__).parent.parent / "static"), name="static")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],        # tighten in prod
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # ────────────────────────────────  POST /optimize  ────────────────────────────────
 @app.post("/optimize", response_model=schemas.JobCreated)
-async def optimise_chip(file: UploadFile = File(...), bg: BackgroundTasks = None):
+async def optimise_chip(bg: BackgroundTasks,                        # ← don’t give it a default
+    file: UploadFile = File(...)):
     """
     • store uploaded schematic for reference
     • kick off GA optimisation in the background
     """
     job_id = utils.new_id()
-    schematic_path = (utils.TMP / f"{job_id}_{file.filename}")
+    schematic_path = utils.TMP / f"{job_id}_{file.filename}"
     schematic_path.write_bytes(await file.read())
-    jobs.create(job_id, schematic=str(schematic_path), status="queued", layouts=[])
-    bg.add_task(optimizer.optimise, power_threshold=.5)
+
+    jobs.create(
+        job_id,
+        schematic=str(schematic_path),
+        status="queued",
+        layouts=[],
+    )
+
+    # Pass the SAME job_id into the optimiser
+    bg.add_task(optimizer.optimise, job_id=job_id, power_threshold=0.5)
     return {"job_id": job_id}
 
 # ────────────────────────────────  GET /layouts  ────────────────────────────────
@@ -49,6 +66,6 @@ async def download_def(layout_id: str):
     return {"detail": "not found"}
 
 # ─────────────────────────  WebSocket /ws/simulate/{id}  ─────────────────────────
-@app.websocket("/ws/simulate/{layout_id}")
+@app.websocket("/ws/simulate/{job_id}")
 async def ws_simulate(ws: WebSocket, layout_id: str):
     await simulator.simulate(layout_id, ws)

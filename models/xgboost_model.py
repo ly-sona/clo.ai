@@ -1,61 +1,60 @@
-# xgboost_model.py
-import argparse
-import numpy as np
-import xgboost as xgb
+# models/xgboost_model.py  –  CSV-driven congestion training
+import argparse, numpy as np, pandas as pd, xgboost as xgb
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import mean_absolute_error, r2_score
-from preprocessing import load_dataset
+from pathlib import Path
 
-def main():
-    parser = argparse.ArgumentParser(
-        description="Train XGBoost model on CircuitNet data for power prediction."
-    )
-    parser.add_argument("--input_dirs", required=True,
-                        help="Comma-separated list of input .npy feature directories.")
-    parser.add_argument("--output_dirs", required=True,
-                        help="Comma-separated list of output .npy label directories.")
-    parser.add_argument("--manifest", required=False,
-                        help="Optional manifest file (JSON or text) for sample paths.")
-    parser.add_argument("--preserve_shape", action="store_true",
-                        help="Preserve array shape (no flattening).")
-    parser.add_argument("--model_output", default="xgb_layout_model.json",
-                        help="Path to save the trained XGBoost model.")
-    parser.add_argument("--threshold", type=float, default=0.5,
-                        help="Power consumption threshold for reporting.")
-    args = parser.parse_args()
+def load_csv(csv_path: str, base_dir: str = "."):
+    """
+    Returns X (flattened feature tensors) and y (congestion labels).
+    CSV must have two columns (no header):
+        col0  relative path to feature .npy  (C,H,W or H,W)
+        col1  relative path to label   .npy  (scalar or length-1)
+    """
+    base = Path(base_dir)
+    rows = pd.read_csv(csv_path, header=None).values
 
-    # Load data
-    X_raw, y = load_dataset(
-        args.input_dirs,
-        output_dirs=args.output_dirs,
-        manifest_path=args.manifest,
-        preserve_shape=args.preserve_shape
-    )
+    X_list, y_list = [], []
+    for feat_rel, lab_rel in rows:
+        feat = np.load(base / feat_rel, allow_pickle=True)
+        lab  = np.load(base / lab_rel,  allow_pickle=True)
 
-    features = np.array([sample.reshape(-1) for sample in X_raw]) 
+        X_list.append(feat.reshape(-1))        # flatten (C×H×W) → 1-D
+        y_list.append(float(lab.squeeze()))    # scalar
 
-    # Standardize features
-    scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(features)
+    return np.array(X_list, dtype=np.float32), np.array(y_list, dtype=np.float32)
 
-    # Train-test split
-    X_train, X_test, y_train, y_test = train_test_split(
-        X_scaled, y, test_size=0.2, random_state=42
-    )
-
-    # Train model
-    model = xgb.XGBRegressor(objective='reg:squarederror', random_state=42)
-    model.fit(X_train, y_train)
-
-    # Evaluate
-    y_pred = model.predict(X_test)
-    print(f"Mean Absolute Error (MAE): {mean_absolute_error(y_test, y_pred)}")
-    print(f"R-squared: {r2_score(y_test, y_pred)}")
-
-    # Save model
-    model.save_model(args.model_output)
-    print(f"Trained model saved to {args.model_output}")
-
+# ────────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    main()
+    p = argparse.ArgumentParser(description="Train congestion predictor from CSV list")
+    p.add_argument("--csv", required=True, help="Path to train_N28.csv")
+    p.add_argument("--base_dir", default=".", help="Folder that contains the .npy files")
+    p.add_argument("--model_output", default="xgb_congestion_model.json")
+    args = p.parse_args()
+
+    X, y = load_csv(args.csv, args.base_dir)
+    print(f"Loaded {len(X)} samples, {X.shape[1]} features each")
+
+    # standardise features
+    X = StandardScaler().fit_transform(X)
+
+    X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, random_state=42)
+
+    model = xgb.XGBRegressor(
+        objective="reg:squarederror",
+        n_estimators=500,
+        learning_rate=0.1,
+        max_depth=6,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        random_state=42,
+    )
+    model.fit(X_tr, y_tr)
+
+    y_pred = model.predict(X_te)
+    print("MAE:", mean_absolute_error(y_te, y_pred))
+    print("R² :", r2_score(y_te, y_pred))
+
+    model.save_model(args.model_output)
+    print("Saved →", args.model_output)

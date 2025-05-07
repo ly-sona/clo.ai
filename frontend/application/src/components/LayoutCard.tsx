@@ -32,6 +32,8 @@ export default function LayoutCard({
   const [showBench, setShowBench] = useState(false);
   const [benchText, setBenchText] = useState<string | null>(null);
   const [loadingBench, setLoadingBench] = useState(false);
+  const [optimizedBenchText, setOptimizedBenchText] = useState<string | null>(null);
+  const [loadingOptimizedBench, setLoadingOptimizedBench] = useState(false);
 
   // Calculate percentage changes
   const powerChange = original_power ? ((power - original_power) / original_power) * 100 : 0;
@@ -51,6 +53,44 @@ export default function LayoutCard({
       } finally {
         setLoadingBench(false);
       }
+    }
+  };
+
+  const handleDownloadOptimizedBench = async () => {
+    if (!optimizedBenchText) {
+      setLoadingOptimizedBench(true);
+      try {
+        const res = await fetch(`/layout/${id}/optimized-bench`);
+        if (!res.ok) throw new Error("Failed to fetch optimized .bench file");
+        const text = await res.text();
+        setOptimizedBenchText(text);
+        
+        // Create and trigger download
+        const blob = new Blob([text], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${id}_optimized.bench`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (e) {
+        console.error("Error downloading optimized bench file:", e);
+      } finally {
+        setLoadingOptimizedBench(false);
+      }
+    } else {
+      // If we already have the text, just download it
+      const blob = new Blob([optimizedBenchText], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${id}_optimized.bench`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -176,6 +216,21 @@ export default function LayoutCard({
                 className="w-full border-indigo-200 hover:bg-indigo-50 text-indigo-700 hover:text-indigo-800"
               >
                 {showBench ? "Hide Original Circuit" : "Show Original Circuit"}
+              </Button>
+              
+              <Button
+                variant="outline"
+                onClick={handleDownloadOptimizedBench}
+                size={isInModal ? "sm" : "default"}
+                className="w-full border-indigo-200 hover:bg-indigo-50 text-indigo-700 hover:text-indigo-800"
+                disabled={loadingOptimizedBench}
+              >
+                {loadingOptimizedBench ? "Loading..." : (
+                  <div className="flex items-center gap-2">
+                    <DownloadIcon className="h-4 w-4" />
+                    <span>Download Optimized Circuit</span>
+                  </div>
+                )}
               </Button>
             </div>
           </div>

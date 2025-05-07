@@ -32,16 +32,16 @@ export default function Upload() {
           </motion.div>
           {newLayout && (
             <>
-              <div className="mt-8 flex justify-start w-[80%] mx-auto">
-                <button
-                  className="animated-gradient px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-300 via-sky-200 to-purple-300 text-slate-900 font-semibold shadow flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sky-300/50"
-                  onClick={() => setNewLayout(null)}
-                  title="Upload Again"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                </button>
-              </div>
-              <div className="mt-8 w-full">
+              <div className="w-full mx-auto flex flex-col">
+                <div className="w-full flex justify-start mb-2">
+                  <button
+                    className="animated-gradient px-6 py-3 rounded-lg bg-gradient-to-r from-indigo-300 via-sky-200 to-purple-300 text-slate-900 font-semibold shadow flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-sky-300/50"
+                    onClick={() => setNewLayout(null)}
+                    title="Upload Again"
+                  >
+                    <RefreshCw className="w-5 h-5" />
+                  </button>
+                </div>
                 <LayoutCard {...newLayout} />
               </div>
             </>

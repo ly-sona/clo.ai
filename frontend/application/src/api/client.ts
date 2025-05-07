@@ -39,3 +39,19 @@ export async function apiPostFile(
   xhr.send(body);
   return p;
 }
+
+export async function apiGetLef(): Promise<string> {
+  const response = await fetch(`${API}/layout/default/lef`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch LEF content');
+  }
+  return response.text();
+}
+
+export async function apiGetDef(layoutId: string): Promise<string> {
+  const response = await fetch(`${API}/def/${layoutId}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch DEF content');
+  }
+  return response.text();
+}

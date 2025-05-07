@@ -1,9 +1,13 @@
-from fastapi import FastAPI, UploadFile, File, BackgroundTasks, WebSocket
+from fastapi import FastAPI, UploadFile, File, BackgroundTasks, WebSocket, HTTPException, Response
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
-from . import schemas, jobs, optimizer, simulator, utils
+import schemas
+import jobs
+import optimizer
+import utils
 from fastapi.middleware.cors import CORSMiddleware
+import json
 
 app = FastAPI(title="Chip-Layout API")
 app.mount("/static", StaticFiles(directory=Path(__file__).parent.parent / "static"), name="static")
@@ -17,13 +21,14 @@ app.add_middleware(
 
 # ────────────────────────────────  POST /optimize  ────────────────────────────────
 @app.post("/optimize", response_model=schemas.JobCreated)
-async def optimise_chip(bg: BackgroundTasks,                        # ← don’t give it a default
+async def optimise_chip(bg: BackgroundTasks,                        # ← don't give it a default
     file: UploadFile = File(...)):
     """
     • store uploaded schematic for reference
     • kick off GA optimisation in the background
     """
-    job_id = utils.new_id()
+    # Use filename as job_id, but remove extension and sanitize
+    job_id = Path(file.filename).stem.replace(" ", "_")
     schematic_path = utils.TMP / f"{job_id}_{file.filename}"
     schematic_path.write_bytes(await file.read())
 
@@ -50,22 +55,57 @@ async def list_layouts():
 # ────────────────────────  GET /layout/{id} (+ download)  ────────────────────────
 @app.get("/layout/{layout_id}", response_model=schemas.LayoutDetail)
 async def layout_detail(layout_id: str):
-    for j in jobs.list_all():
-        for l in j["layouts"]:
-            if l["id"] == layout_id:
-                return schemas.LayoutDetail(**l, wns=0.15, cells=1234, fullPng=l["thumb"])
-    return {"detail": "not found"}
+    layout_dir = utils.LAYOUTS / layout_id
+    if not layout_dir.exists():
+        raise HTTPException(status_code=404, detail="Layout not found")
+        
+    metadata_path = layout_dir / "metadata.json"
+    if not metadata_path.exists():
+        raise HTTPException(status_code=404, detail="Layout metadata not found")
+        
+    with open(metadata_path) as f:
+        layout_data = json.load(f)
+        
+    return schemas.LayoutDetail(
+        **layout_data,
+        wns=0.15,  # These are placeholder values
+        cells=1234,
+        fullPng=layout_data["thumb"]
+    )
 
 @app.get("/layout/{layout_id}/download")
 async def download_def(layout_id: str):
-    for j in jobs.list_all():
-        for l in j["layouts"]:
-            if l["id"] == layout_id:
-                return FileResponse(l["def_path"], media_type="application/octet-stream",
-                                    filename=f"{layout_id}.def")
-    return {"detail": "not found"}
+    def_path = utils.LAYOUTS / layout_id / f"{layout_id}.def"
+    if not def_path.exists():
+        raise HTTPException(status_code=404, detail="DEF file not found")
+        
+    return FileResponse(
+        def_path,
+        media_type="application/octet-stream",
+        filename=f"{layout_id}.def"
+    )
 
-# ─────────────────────────  WebSocket /ws/simulate/{id}  ─────────────────────────
-@app.websocket("/ws/simulate/{job_id}")
-async def ws_simulate(ws: WebSocket, layout_id: str):
-    await simulator.simulate(layout_id, ws)
+@app.get("/layout/{layout_id}/bench")
+async def download_optimized_bench(layout_id: str):
+    bench_path = utils.LAYOUTS / layout_id / f"{layout_id}_optimized.bench"
+    if not bench_path.exists():
+        raise HTTPException(status_code=404, detail="Optimized .bench file not found")
+    return FileResponse(bench_path, media_type="text/plain", filename=f"{layout_id}_optimized.bench")
+
+@app.get("/layout/{layout_id}/lef")
+async def get_lef(layout_id: str):
+    """Get the LEF file content for a layout."""
+    try:
+        with open("lib/nangate45.lef", "r") as f:
+            return Response(content=f.read(), media_type="text/plain")
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="LEF file not found")
+
+@app.get("/def/{layout_id}")
+async def get_def(layout_id: str):
+    try:
+        def_path = utils.LAYOUTS / layout_id / f"{layout_id}.def"
+        with open(def_path, "r") as f:
+            return Response(content=f.read(), media_type="text/plain")
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="DEF file not found")

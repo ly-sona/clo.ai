@@ -1,7 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Quantico:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
 :root {
@@ -49,4 +50,52 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+}
+
+.font-heading {
+  font-family: "Quantico", sans-serif;
+  font-weight: 700;
+}
+
+.quantico-regular {
+  font-family: "Quantico", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.quantico-bold {
+  font-family: "Quantico", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.quantico-regular-italic {
+  font-family: "Quantico", sans-serif;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.quantico-bold-italic {
+  font-family: "Quantico", sans-serif;
+  font-weight: 700;
+  font-style: italic;
+}
+
+.animated-gradient {
+  background-size: 200% 200%;
+  background-position: left;
+  transition: background-position 0.5s cubic-bezier(.4,0,.2,1);
+}
+.animated-gradient:hover {
+  background-position: right;
+}
+
+.animated-gray-gradient {
+  background-size: 200% 200%;
+  background-position: left;
+  transition: background-position 0.5s cubic-bezier(.4,0,.2,1), transform 0.2s ease;
+}
+.animated-gray-gradient:hover {
+  background-position: right;
+  transform: translateY(-1px);
 }

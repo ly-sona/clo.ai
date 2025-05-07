@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field
 from typing import List
 
 class JobCreated(BaseModel):
@@ -6,10 +6,14 @@ class JobCreated(BaseModel):
 
 class LayoutMeta(BaseModel):
     id: str
-    thumb: HttpUrl
+    thumb: str
     power: float
+    original_power: float | None = None
+    original_delay: float | None = None
+    new_delay: float | None = None
+    optimized_circuit: str | None = None
 
 class LayoutDetail(LayoutMeta):
     wns: float | None = None
     cells: int | None = None
-    fullPng: HttpUrl | None = None
+    fullPng: str | None = None

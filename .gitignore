@@ -194,3 +194,80 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Large files and data
+/circuitnet_data/
+/tmp/
+*.zip
+*.tar.gz
+*.tgz
+
+# Circuit and layout files
+*.bench
+/circuit_files/
+/layouts/
+# Exceptions - include small example circuits in the repo
+!circuit_files/examples/
+!layouts/examples/
+*.def
+*.lef
+*.gds
+*.spice
+*.v
+*.lib
+*.netlist
+*.sdc
+
+# Model checkpoints and large ML files
+/models/*.pkl
+/models/*.joblib
+/models/*.h5
+/models/checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.onnx
+*.tflite
+
+# Local development files
+/.env.local
+/.env.development.local
+/.env.test.local
+/.env.production.local
+frontend/application/.env*.local
+
+# OS-specific files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Personal configuration files
+*.swp
+*.bak
+*.tmp
+*~
+
+# Mac specific files
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Temporary benchmark/test results
+/benchmark_results/
+/test_results/
+*.profraw
+
+# Large binary files
+*.bin
+*.npy
+*.npz
+
+# Yarn v2
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+.pnp.*

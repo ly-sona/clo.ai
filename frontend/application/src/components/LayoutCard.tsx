@@ -3,6 +3,7 @@ import { useState } from "react";
 import { ArrowDown, ArrowUp, DownloadIcon, EyeIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import CircuitView from "./CircuitView";
+import { ReactFlowProvider } from "reactflow";
 
 interface Props {
   id: string;
@@ -29,32 +30,12 @@ export default function LayoutCard({
   isInModal = false // Default to false
 }: Props) {
   const [showOriginal, setShowOriginal] = useState(false);
-  const [showBench, setShowBench] = useState(false);
-  const [benchText, setBenchText] = useState<string | null>(null);
-  const [loadingBench, setLoadingBench] = useState(false);
   const [optimizedBenchText, setOptimizedBenchText] = useState<string | null>(null);
   const [loadingOptimizedBench, setLoadingOptimizedBench] = useState(false);
 
   // Calculate percentage changes
   const powerChange = original_power ? ((power - original_power) / original_power) * 100 : 0;
   const delayChange = original_delay && new_delay ? ((new_delay - original_delay) / original_delay) * 100 : 0;
-
-  const handleShowBench = async () => {
-    setShowBench(!showBench);
-    if (!benchText && !showBench) {
-      setLoadingBench(true);
-      try {
-        const res = await fetch(`/layout/${id}/bench`);
-        if (!res.ok) throw new Error("Failed to fetch .bench file");
-        const text = await res.text();
-        setBenchText(text);
-      } catch (e) {
-        setBenchText("Error loading .bench file");
-      } finally {
-        setLoadingBench(false);
-      }
-    }
-  };
 
   const handleDownloadOptimizedBench = async () => {
     if (!optimizedBenchText) {
@@ -208,15 +189,6 @@ export default function LayoutCard({
               >
                 {showOriginal ? "Hide Original" : "Show Original"}
               </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleShowBench}
-                size={isInModal ? "sm" : "default"}
-                className="w-full border-indigo-200 hover:bg-indigo-50 text-indigo-700 hover:text-indigo-800"
-              >
-                {showBench ? "Hide Original Circuit" : "Show Original Circuit"}
-              </Button>
               
               <Button
                 variant="outline"
@@ -235,21 +207,6 @@ export default function LayoutCard({
             </div>
           </div>
         </div>
-
-        {/* Original Circuit View (when expanded) */}
-        {showBench && (
-          <div className="w-full mt-6">
-            {loadingBench ? (
-              <div className="text-center text-slate-500">Loading...</div>
-            ) : benchText ? (
-              <div className={`w-full h-[${circuitHeight}] border border-slate-200 rounded-lg overflow-hidden shadow-inner bg-white`}>
-                <CircuitView content={benchText} maxNodes={isInModal ? 1500 : 800} />
-              </div>
-            ) : (
-              <div className="text-center text-slate-500">No circuit data available</div>
-            )}
-          </div>
-        )}
       </CardContent>
     </Card>
   );
